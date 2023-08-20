@@ -1,6 +1,5 @@
 package com.jar89.apimovisearchstudy.utill
 
-import android.app.Activity
 import android.content.Context
 import com.jar89.apimovisearchstudy.data.MoviesRepositoryImpl
 import com.jar89.apimovisearchstudy.data.network.RetrofitNetworkClient
@@ -8,9 +7,9 @@ import com.jar89.apimovisearchstudy.domain.api.MoviesInteractor
 import com.jar89.apimovisearchstudy.domain.api.MoviesRepository
 import com.jar89.apimovisearchstudy.domain.impl.MoviesInteractorImpl
 import com.jar89.apimovisearchstudy.presentation.movies.MoviesSearchPresenter
-import com.jar89.apimovisearchstudy.presentation.PosterController
+import com.jar89.apimovisearchstudy.presentation.poster.PosterPresenter
 import com.jar89.apimovisearchstudy.presentation.movies.MoviesView
-import com.jar89.apimovisearchstudy.ui.movies.MovieAdapter
+import com.jar89.apimovisearchstudy.presentation.poster.PosterView
 
 object Creator {
     private fun getMoviesRepository(context: Context): MoviesRepository {
@@ -23,15 +22,15 @@ object Creator {
 
     fun provideMoviesSearchPresenter(
         moviesView: MoviesView,
-        adapter: MovieAdapter
+        context: Context
     ): MoviesSearchPresenter {
         return MoviesSearchPresenter(
             view = moviesView,
-            adapter = adapter
+            context = context
         )
     }
 
-    fun providePosterController(activity: Activity): PosterController {
-        return PosterController(activity)
+    fun providePosterPresenter(posterView: PosterView, imgUrl: String): PosterPresenter {
+        return PosterPresenter(view = posterView, imgUrl = imgUrl)
     }
 }
