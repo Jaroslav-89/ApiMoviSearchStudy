@@ -1,6 +1,5 @@
 package com.jar89.apimovisearchstudy.ui.movies
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -14,7 +13,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.jar89.apimovisearchstudy.MoviesApplication
 import com.jar89.apimovisearchstudy.utill.Creator
 import com.jar89.apimovisearchstudy.R
 import com.jar89.apimovisearchstudy.domain.models.Movie
@@ -47,6 +45,7 @@ class MovieActivity : MvpActivity(), MoviesView {
 
     @InjectPresenter
     lateinit var moviesSearchPresenter: MoviesSearchPresenter
+
     @ProvidePresenter
     fun providePresenter(): MoviesSearchPresenter {
         return Creator.provideMoviesSearchPresenter(

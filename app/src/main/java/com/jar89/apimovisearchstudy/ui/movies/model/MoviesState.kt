@@ -2,7 +2,7 @@ package com.jar89.apimovisearchstudy.ui.movies.model
 
 import com.jar89.apimovisearchstudy.domain.models.Movie
 
-sealed interface MoviesState{
+sealed interface MoviesState {
 
     object Loading : MoviesState
 
