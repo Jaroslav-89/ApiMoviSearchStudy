@@ -22,8 +22,11 @@ import com.jar89.apimovisearchstudy.presentation.movies.MoviesSearchPresenter
 import com.jar89.apimovisearchstudy.presentation.movies.MoviesView
 import com.jar89.apimovisearchstudy.ui.movies.model.MoviesState
 import com.jar89.apimovisearchstudy.ui.poster.PosterActivity
+import moxy.MvpActivity
+import moxy.presenter.InjectPresenter
+import moxy.presenter.ProvidePresenter
 
-class MovieActivity : Activity(), MoviesView {
+class MovieActivity : MvpActivity(), MoviesView {
 
     companion object {
         private const val CLICK_DEBOUNCE_DELAY = 1000L
@@ -41,7 +44,15 @@ class MovieActivity : Activity(), MoviesView {
 
     private val handler = Handler(Looper.getMainLooper())
     private var textWatcher: TextWatcher? = null
-    private var moviesSearchPresenter : MoviesSearchPresenter? = null
+
+    @InjectPresenter
+    lateinit var moviesSearchPresenter: MoviesSearchPresenter
+    @ProvidePresenter
+    fun providePresenter(): MoviesSearchPresenter {
+        return Creator.provideMoviesSearchPresenter(
+            context = this.applicationContext,
+        )
+    }
 
     private lateinit var queryInput: EditText
     private lateinit var placeholderMessage: TextView
@@ -51,17 +62,6 @@ class MovieActivity : Activity(), MoviesView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        moviesSearchPresenter = (this.applicationContext as? MoviesApplication)?.moviesSearchPresenter
-
-        if (moviesSearchPresenter == null) {
-            moviesSearchPresenter = Creator.provideMoviesSearchPresenter(
-                context = this.applicationContext
-            )
-            (this.applicationContext as? MoviesApplication)?.moviesSearchPresenter = moviesSearchPresenter
-        }
-
-        moviesSearchPresenter?.attachView(this)
 
         // Кусочек кода, который был в Presenter
         placeholderMessage = findViewById(R.id.placeholderMessage)
@@ -87,42 +87,6 @@ class MovieActivity : Activity(), MoviesView {
         }
         textWatcher?.let { queryInput.addTextChangedListener(it) }
 
-    }
-
-    override fun onStart() {
-        super.onStart()
-        moviesSearchPresenter?.attachView(this)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        moviesSearchPresenter?.attachView(this)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        moviesSearchPresenter?.detachView()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        moviesSearchPresenter?.detachView()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        moviesSearchPresenter?.detachView()
-    }
-    override fun onDestroy() {
-        super.onDestroy()
-        moviesSearchPresenter?.detachView()
-        textWatcher?.let { queryInput.removeTextChangedListener(it) }
-        moviesSearchPresenter?.onDestroy()
-
-        if (isFinishing()) {
-            // Очищаем ссылку на Presenter в Application
-            (this.application as? MoviesApplication)?.moviesSearchPresenter = null
-        }
     }
 
     private fun clickDebounce(): Boolean {

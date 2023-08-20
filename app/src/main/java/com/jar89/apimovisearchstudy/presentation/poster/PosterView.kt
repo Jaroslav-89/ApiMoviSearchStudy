@@ -1,6 +1,8 @@
 package com.jar89.apimovisearchstudy.presentation.poster
 
-interface PosterView {
+import moxy.MvpView
+
+interface PosterView : MvpView {
 
     fun setPosterImage(imgUrl: String)
 }

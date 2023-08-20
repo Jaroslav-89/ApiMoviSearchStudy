@@ -10,18 +10,17 @@ import com.jar89.apimovisearchstudy.R
 import com.jar89.apimovisearchstudy.domain.api.MoviesInteractor
 import com.jar89.apimovisearchstudy.domain.models.Movie
 import com.jar89.apimovisearchstudy.ui.movies.model.MoviesState
+import moxy.MvpPresenter
 
 class MoviesSearchPresenter(
     private val context: Context
-) {
+) : MvpPresenter<MoviesView>() {
 
     companion object {
         private const val SEARCH_DEBOUNCE_DELAY = 2000L
         private val SEARCH_REQUEST_TOKEN = Any()
     }
 
-    private var view: MoviesView? = null
-    private var state: MoviesState? = null
     private var latestSearchText: String? = null
 
     private val moviesInteractor = Creator.provideMoviesInteractor(context)
@@ -30,16 +29,7 @@ class MoviesSearchPresenter(
 
     private val handler = Handler(Looper.getMainLooper())
 
-    fun attachView(view: MoviesView) {
-        this.view = view
-        state?.let { view.render(it) }
-    }
-
-    fun detachView() {
-        this.view = null
-    }
-
-    fun onDestroy() {
+    override fun onDestroy() {
         handler.removeCallbacksAndMessages(SEARCH_REQUEST_TOKEN)
     }
 
@@ -83,16 +73,16 @@ class MoviesSearchPresenter(
 
                         when {
                             errorMessage != null -> {
-                                view?.render(
+                                viewState?.render(
                                     MoviesState.Error(
                                         errorMessage = context.getString(R.string.something_went_wrong),
                                     )
                                 )
-                                view?.showToast(errorMessage)
+                                viewState?.showToast(errorMessage)
                             }
 
                             movies.isEmpty() -> {
-                                view?.render(
+                                viewState?.render(
                                     MoviesState.Empty(
                                         message = context.getString(R.string.nothing_found),
                                     )
@@ -100,7 +90,7 @@ class MoviesSearchPresenter(
                             }
 
                             else -> {
-                                view?.render(
+                                viewState?.render(
                                     MoviesState.Content(
                                         movies = movies,
                                     )
@@ -115,7 +105,6 @@ class MoviesSearchPresenter(
     }
 
     private fun renderState(state: MoviesState) {
-        this.state = state
-        this.view?.render(state)
+        viewState.render(state)
     }
 }

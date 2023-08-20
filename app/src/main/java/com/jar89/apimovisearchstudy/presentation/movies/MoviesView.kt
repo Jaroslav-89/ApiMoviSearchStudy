@@ -1,9 +1,12 @@
 package com.jar89.apimovisearchstudy.presentation.movies
 
-import com.jar89.apimovisearchstudy.domain.models.Movie
 import com.jar89.apimovisearchstudy.ui.movies.model.MoviesState
+import moxy.MvpView
+import moxy.viewstate.strategy.AddToEndSingleStrategy
+import moxy.viewstate.strategy.OneExecutionStateStrategy
+import moxy.viewstate.strategy.StateStrategyType
 
-interface MoviesView {
+interface MoviesView : MvpView {
 
 //    // Методы, меняющие внешний вид экрана
 //
@@ -21,9 +24,11 @@ interface MoviesView {
 
     // Методы, меняющие внешний вид экрана
 
+    @StateStrategyType(AddToEndSingleStrategy::class)
     fun render(state: MoviesState)
 
     // Методы «одноразовых событий»
 
+    @StateStrategyType(OneExecutionStateStrategy::class)
     fun showToast(additionalMessage: String)
 }
