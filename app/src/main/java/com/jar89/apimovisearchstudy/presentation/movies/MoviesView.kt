@@ -1,18 +1,29 @@
 package com.jar89.apimovisearchstudy.presentation.movies
 
 import com.jar89.apimovisearchstudy.domain.models.Movie
+import com.jar89.apimovisearchstudy.ui.movies.model.MoviesState
 
 interface MoviesView {
 
-    fun showPlaceholderMessage(isVisible: Boolean)
+//    // Методы, меняющие внешний вид экрана
+//
+//    // Состояние «загрузки»
+//    fun showLoading()
+//
+//    // Состояние «ошибки»
+//    fun showError(errorMessage: String)
+//
+//    // Состояние «пустого списка»
+//    fun showEmpty(emptyMessage: String)
+//
+//    // Состояние «контента»
+//    fun showContent(movies: List<Movie>)
 
-    fun showMoviesList(isVisible: Boolean)
+    // Методы, меняющие внешний вид экрана
 
-    fun showProgressBar(isVisible: Boolean)
+    fun render(state: MoviesState)
 
-    fun changePlaceholderText(newPlaceholderText: String)
-
-    fun updateMoviesList(newMoviesList: List<Movie>)
+    // Методы «одноразовых событий»
 
     fun showToast(additionalMessage: String)
 }

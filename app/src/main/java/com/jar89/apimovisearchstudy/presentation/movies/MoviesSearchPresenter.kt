@@ -9,9 +9,9 @@ import com.jar89.apimovisearchstudy.utill.Creator
 import com.jar89.apimovisearchstudy.R
 import com.jar89.apimovisearchstudy.domain.api.MoviesInteractor
 import com.jar89.apimovisearchstudy.domain.models.Movie
+import com.jar89.apimovisearchstudy.ui.movies.model.MoviesState
 
 class MoviesSearchPresenter(
-    private val view: MoviesView,
     private val context: Context
 ) {
 
@@ -20,17 +20,35 @@ class MoviesSearchPresenter(
         private val SEARCH_REQUEST_TOKEN = Any()
     }
 
+    private var view: MoviesView? = null
+    private var state: MoviesState? = null
+    private var latestSearchText: String? = null
+
     private val moviesInteractor = Creator.provideMoviesInteractor(context)
 
     private val movies = ArrayList<Movie>()
 
     private val handler = Handler(Looper.getMainLooper())
 
+    fun attachView(view: MoviesView) {
+        this.view = view
+        state?.let { view.render(it) }
+    }
+
+    fun detachView() {
+        this.view = null
+    }
+
     fun onDestroy() {
         handler.removeCallbacksAndMessages(SEARCH_REQUEST_TOKEN)
     }
 
     fun searchDebounce(changedText: String) {
+        if (latestSearchText == changedText) {
+            return
+        }
+
+        this.latestSearchText = changedText
         handler.removeCallbacksAndMessages(SEARCH_REQUEST_TOKEN)
 
         val searchRunnable = Runnable { searchRequest(changedText) }
@@ -53,60 +71,51 @@ class MoviesSearchPresenter(
 
     private fun searchRequest(newSearchText: String) {
         if (newSearchText.isNotEmpty()) {
-            view.showPlaceholderMessage(false)
-            view.showMoviesList(false)
-            view.showProgressBar(true)
+            renderState(MoviesState.Loading)
 
-            moviesInteractor.searchMovies(
-                newSearchText,
-                object : MoviesInteractor.MoviesConsumer {
-                    override fun consume(foundMovies: List<Movie>?, errorMessage: String?) {
-                        handler.post {
-                            view.showProgressBar(false)
-                            if (foundMovies != null) {
-                                movies.clear()
-                                movies.addAll(foundMovies)
-                                view.updateMoviesList(movies)
-                                view.showMoviesList(true)
-                            }
-                            if (errorMessage != null) {
-                                showMessage(
-                                    context.getString(R.string.something_went_wrong),
-                                    errorMessage
+            moviesInteractor.searchMovies(newSearchText, object : MoviesInteractor.MoviesConsumer {
+                override fun consume(foundMovies: List<Movie>?, errorMessage: String?) {
+                    handler.post {
+                        if (foundMovies != null) {
+                            movies.clear()
+                            movies.addAll(foundMovies)
+                        }
+
+                        when {
+                            errorMessage != null -> {
+                                view?.render(
+                                    MoviesState.Error(
+                                        errorMessage = context.getString(R.string.something_went_wrong),
+                                    )
                                 )
-                            } else if (movies.isEmpty()) {
-                                showMessage(context.getString(R.string.nothing_found), "")
-                            } else {
-                                hideMessage()
+                                view?.showToast(errorMessage)
+                            }
+
+                            movies.isEmpty() -> {
+                                view?.render(
+                                    MoviesState.Empty(
+                                        message = context.getString(R.string.nothing_found),
+                                    )
+                                )
+                            }
+
+                            else -> {
+                                view?.render(
+                                    MoviesState.Content(
+                                        movies = movies,
+                                    )
+                                )
                             }
                         }
+
                     }
                 }
-            )
+            })
         }
     }
 
-    private fun showMessage(text: String, additionalMessage: String) {
-        if (text.isNotEmpty()) {
-            // Заменили работу с элементами UI на
-            // вызовы методов интерфейса
-            view.showPlaceholderMessage(true)
-            movies.clear()
-            view.updateMoviesList(movies)
-
-            view.changePlaceholderText(text)
-
-            if (additionalMessage.isNotEmpty()) {
-                view.showToast(additionalMessage)
-            }
-        } else {
-            // Заменили работу с элементами UI на
-            // вызовы методов интерфейса
-            view.showPlaceholderMessage(false)
-        }
-    }
-
-    private fun hideMessage() {
-        view.showPlaceholderMessage(false)
+    private fun renderState(state: MoviesState) {
+        this.state = state
+        this.view?.render(state)
     }
 }
